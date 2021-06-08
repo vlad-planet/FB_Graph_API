@@ -26,8 +26,8 @@
 
 ```php
 'facebook' => [
-    'client_id' =>> env('FACEBOOK_CLIENT_ID'),         // Ваш идентификатор клиента приложения Facebook
-    'client_secret' =>> env('FACEBOOK_CLIENT_SECRET'), // Ваш секрет клиента приложения Facebook
+    'client_id' =>> env('FACEBOOK_APP_ID'),         // Ваш идентификатор клиента приложения Facebook
+    'client_secret' =>> env('FACEBOOK_APP_SECRET'), // Ваш секрет клиента приложения Facebook
     'redirect' =>> env('FACEBOOK_REDIRECT'), // Маршрут приложения, используемый для перенаправления пользователей обратно в приложение после аутентификации
     'default_graph_version' => > 'v2.12',
 ],
@@ -36,8 +36,8 @@
 Отредактируйте файл ```.env``` вашего проекта.
 
 ```php
-FACEBOOK_CLIENT_ID=APP_CLIENT_ID 
-FACEBOOK_CLIENT_SECRET=APP_SECRET 
+FACEBOOK_APP_ID=367634851613759 
+FACEBOOK_APP_SECRET=b2385b3719b6aac14925fa116366c768 
 FACEBOOK_REDIRECT=https://localhost:3000/login/facebook/callback
 ```
 
@@ -122,27 +122,28 @@ Edit ```app/Http/Controllers/Auth/LoginController.php```
 
 ```php
 <?php
- 
+
 namespace App\Http\Controllers\Auth;
- 
+
 use App\Http\Controllers\Controller;
-use App\User;
+use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
- 
+use Socialize;
+
+
 class LoginController extends Controller
 {
- 
     use AuthenticatesUsers;
- 
+
     /**
      * Where to redirect users after login.
      *
      * @var string
      */
     protected $redirectTo = '/home';
- 
+
     /**
      * Create a new controller instance.
      *
@@ -152,7 +153,7 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
- 
+
     /**
      * Redirect the user to the Facebook authentication page.
      *
@@ -160,10 +161,8 @@ class LoginController extends Controller
      */
     public function redirectToFacebookProvider()
     {
-        return Socialite::driver('facebook')->scopes([
-            "publish_actions, manage_pages", "publish_pages"])->redirect();
+		return Socialite::driver('facebook')->scopes(["", "public_profile"])->redirect();
     }
- 
     /**
      * Obtain the user information from Facebook.
      *
@@ -171,20 +170,22 @@ class LoginController extends Controller
      */
     public function handleProviderFacebookCallback()
     {
+		
         $auth_user = Socialite::driver('facebook')->user();
- 
+
         $user = User::updateOrCreate(
             [
                 'email' => $auth_user->email
             ],
             [
                 'token' => $auth_user->token,
-                'name'  =>  $auth_user->name
+                'name'  =>  $auth_user->name,				
             ]
         );
- 
-        Auth::login($user, true);
-        return redirect()->to('/'); // Redirect to a secure page
+
+        Auth::login($user, true); 
+        return redirect()->to('/user'); // Redirect to a secure page
+
     }
 }
 ```
@@ -195,3 +196,97 @@ class LoginController extends Controller
 
 # Получение профиля пользователя с помощью Graph API
 Давайте создадим новый контроллер для обработки запросов на использование Graph API.
+
+Edit ```app/Http/Controllers/GraphController.php```
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Facebook\Exceptions\FacebookResponseException;
+use Facebook\Exceptions\FacebookSDKException;
+use Facebook\Facebook;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class GraphController extends Controller
+{
+
+    private $api;
+    public function __construct(Facebook $fb)
+    {
+        $this->middleware(function ($request, $next) use ($fb) {
+            $fb->setDefaultAccessToken(Auth::user()->token);
+            $this->api = $fb;
+            return $next($request);
+        });
+    }
+
+    public function retrieveUserProfile(){
+        try {
+            $params = "name,first_name,last_name,age_range,birthday,languages,gender,email,picture";
+            $user = $this->api->get('/me?fields='.$params)->getGraphUser();
+            dd($user);
+        } catch (FacebookSDKException $e) {
+
+        }
+
+    }
+/*
+    public function publishToProfile(Request $request){
+        try {
+            $response = $this->api->post('/me/feed', [
+                'message' => $request->message
+            ]);
+            dd($response);
+        } catch (FacebookSDKException $e) {
+
+        }
+    }
+
+    public function publishToPage(){
+
+        $page_id = '107862144852697';
+
+        try {
+            $post = $this->api->post('/' . $page_id . '/feed', array('message' => 'New post...'), $this->getPageAccessToken($page_id));
+
+            $post = $post->getGraphNode()->asArray();
+
+            dd($post);
+
+        } catch (FacebookSDKException $e) {
+            dd($e); // handle exception
+        }
+    }
+
+    public function getPageAccessToken($page_id){
+        try {
+            // Get the \Facebook\GraphNodes\GraphUser object for the current user.
+            // If you provided a 'default_access_token', the '{access-token}' is optional.
+            $response = $this->api->get('/me/accounts', Auth::user()->token);
+        } catch(FacebookResponseException $e) {
+            // When Graph returns an error
+            echo 'Graph returned an error: ' . $e->getMessage();
+            exit;
+        } catch(FacebookSDKException $e) {
+            // When validation fails or other local issues
+            echo 'Facebook SDK returned an error: ' . $e->getMessage();
+            exit;
+        }
+
+        try {
+            $pages = $response->getGraphEdge()->asArray();
+            foreach ($pages as $key) {
+                if ($key['id'] == $page_id) {
+                    return $key['access_token'];
+                }
+            }
+        } catch (FacebookSDKException $e) {
+            dd($e); // handle exception
+        }
+    }
+*/
+}
+```
