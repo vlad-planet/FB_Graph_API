@@ -1,0 +1,100 @@
+2021-06-07 23:02:52
+Array
+(
+    [category] => account
+    [task] => processPayment
+    [data] => Array
+        (
+            [account_id] => 123
+            [amount] => 59000
+        )
+
+)
+
+2021-06-07 23:02:52
+Array
+(
+    [category] => account
+    [task] => processPayment
+    [data] => Array
+        (
+            [account_id] => 345
+            [amount] => 99000
+        )
+
+)
+
+2021-06-07 23:02:52
+Array
+(
+    [category] => amocrm
+    [task] => sendLead
+    [data] => Array
+        (
+            [lead_id] => 1
+        )
+
+)
+
+2021-06-07 23:02:53
+Array
+(
+    [category] => account
+    [task] => processPayment
+    [data] => Array
+        (
+            [account_id] => 678
+            [amount] => 139000
+        )
+
+)
+
+2021-06-07 23:02:53
+Array
+(
+    [category] => account
+    [task] => processPayment
+    [data] => Array
+        (
+            [account_id] => 912
+            [amount] => 99000
+        )
+
+)
+
+2021-06-07 23:02:53
+Array
+(
+    [category] => amocrm
+    [task] => sendLead
+    [data] => Array
+        (
+            [lead_id] => 2
+        )
+
+)
+
+2021-06-07 23:02:53
+Array
+(
+    [category] => amocrm
+    [task] => sendLead
+    [data] => Array
+        (
+            [lead_id] => 10
+        )
+
+)
+
+2021-06-07 23:02:53
+Array
+(
+    [category] => amocrm
+    [task] => sendLead
+    [data] => Array
+        (
+            [lead_id] => 23
+        )
+
+)
+
