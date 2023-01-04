@@ -5,6 +5,3 @@
 в живом виде https://developer-test.site
 
 ### tasks  -> Исходный код, Паралельное выполнение задач
-
-### dt-l8.zip -> Полный исходник FB Graph API  вместе с Laravel-8
- 
